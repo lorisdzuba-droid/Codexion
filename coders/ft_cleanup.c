@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_cleanup.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/03 15:02:27 by ldzuba            #+#    #+#             */
+/*   Updated: 2026/03/03 15:08:31 by ldzuba           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 void	ft_cleanup(t_sim *sim)
@@ -20,6 +32,6 @@ void	ft_cleanup(t_sim *sim)
 		free(sim->coders);
 	pthread_mutex_destroy(&sim->print_mutex);
 	pthread_mutex_destroy(&sim->sim_mutex);
-    pthread_mutex_destroy(&sim->monitor_mutex);
-    pthread_cond_destroy(&sim->monitor_cond);
+	pthread_mutex_destroy(&sim->monitor_mutex);
+	pthread_cond_destroy(&sim->monitor_cond);
 }

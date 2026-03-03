@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_dongle.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/03 15:02:46 by ldzuba            #+#    #+#             */
+/*   Updated: 2026/03/03 15:36:50 by ldzuba           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 struct timespec	ms_to_timespec(long long ms)
@@ -9,7 +21,7 @@ struct timespec	ms_to_timespec(long long ms)
 	return (ts);
 }
 
-static void	pq_remove(t_pqueue *pq, int coder_id)
+void	pq_remove(t_pqueue *pq, int coder_id)
 {
 	int	i;
 
@@ -27,69 +39,12 @@ static void	pq_remove(t_pqueue *pq, int coder_id)
 	}
 }
 
-static int	is_my_turn(t_dongle *dongle, int coder_id, long long now)
-{
-	if (dongle->in_use)
-		return (0);
-	if (now < dongle->available_at)
-		return (0);
-	if (pq_peek_id(&dongle->queue) != coder_id)
-		return (0);
-	return (1);
-}
-
 void	dongle_dequeue(t_dongle *dongle, t_coder *coder)
 {
 	pthread_mutex_lock(&dongle->mutex);
 	pq_remove(&dongle->queue, coder->id);
 	pthread_mutex_unlock(&dongle->mutex);
 }
-
-int	take_dongle_queued(t_dongle *dongle, t_coder *coder, long long deadline_ms)
-{
-	long long		now;
-	long long		wait_until;
-	struct timespec	ts;
-	t_sim			*sim;
-
-	sim = coder->sim;
-	pthread_mutex_lock(&dongle->mutex);
-	while (1)
-	{
-		pthread_mutex_lock(&sim->sim_mutex);
-		if (sim->simulation_over)
-		{
-			pthread_mutex_unlock(&sim->sim_mutex);
-			pq_remove(&dongle->queue, coder->id);
-			pthread_mutex_unlock(&dongle->mutex);
-			return (0);
-		}
-		pthread_mutex_unlock(&sim->sim_mutex);
-
-		now = get_time_ms();
-		if (is_my_turn(dongle, coder->id, now))
-		{
-			dongle->in_use = 1;
-			pq_pop(&dongle->queue);
-			log_action(sim, coder->id, "has taken a dongle");
-			pthread_mutex_unlock(&dongle->mutex);
-			return (1);
-		}
-		if (now >= deadline_ms)
-		{
-			pq_remove(&dongle->queue, coder->id);
-			pthread_mutex_unlock(&dongle->mutex);
-			return (0);
-		}
-		wait_until = deadline_ms;
-		if (!dongle->in_use && dongle->available_at > now
-			&& dongle->available_at < wait_until)
-			wait_until = dongle->available_at;
-		ts = ms_to_timespec(wait_until);
-		pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &ts);
-	}
-}
-
 
 void	release_dongle(t_dongle *dongle, t_sim *sim)
 {

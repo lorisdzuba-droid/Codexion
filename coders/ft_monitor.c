@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_monitor.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/03 15:02:58 by ldzuba            #+#    #+#             */
+/*   Updated: 2026/03/03 15:43:07 by ldzuba           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 static long long	find_earliest_deadline(t_sim *sim)
@@ -39,68 +51,58 @@ static int	find_burned_out(t_sim *sim)
 	return (-1);
 }
 
-void	wake_all_dongles(t_sim *sim)
+static int	handle_burnout(t_sim *sim, int burned_id)
 {
-	int	i;
-
-	i = 0;
-	while (i < sim->number_of_coders)
+	pthread_mutex_lock(&sim->sim_mutex);
+	if (sim->simulation_over)
 	{
-		pthread_mutex_lock(&sim->dongles[i].mutex);
-		pthread_cond_broadcast(&sim->dongles[i].cond);
-		pthread_mutex_unlock(&sim->dongles[i].mutex);
-		i++;
+		pthread_mutex_unlock(&sim->sim_mutex);
+		return (1);
 	}
+	sim->simulation_over = 1;
+	pthread_mutex_unlock(&sim->sim_mutex);
+	log_action(sim, burned_id, "burned out");
+	wake_all_dongles(sim);
+	return (1);
+}
+
+static int	monitor_cycle(t_sim *sim)
+{
+	long long		next_deadline;
+	struct timespec	ts;
+	int				burned_id;
+
+	pthread_mutex_lock(&sim->sim_mutex);
+	if (sim->simulation_over)
+	{
+		pthread_mutex_unlock(&sim->sim_mutex);
+		return (0);
+	}
+	pthread_mutex_unlock(&sim->sim_mutex);
+	next_deadline = find_earliest_deadline(sim);
+	ts = ms_to_timespec(next_deadline);
+	pthread_cond_timedwait(&sim->monitor_cond, &sim->monitor_mutex, &ts);
+	pthread_mutex_lock(&sim->sim_mutex);
+	if (sim->simulation_over)
+	{
+		pthread_mutex_unlock(&sim->sim_mutex);
+		return (0);
+	}
+	pthread_mutex_unlock(&sim->sim_mutex);
+	burned_id = find_burned_out(sim);
+	if (burned_id != -1)
+		return (handle_burnout(sim, burned_id));
+	return (1);
 }
 
 void	*monitor_routine(void *arg)
 {
-	t_sim			*sim;
-	int				burned_id;
-    long long		next_deadline;
-	struct timespec	ts;
+	t_sim	*sim;
 
 	sim = (t_sim *)arg;
-
 	pthread_mutex_lock(&sim->monitor_mutex);
-	while (1)
-	{
-		pthread_mutex_lock(&sim->sim_mutex);
-		if (sim->simulation_over)
-		{
-			pthread_mutex_unlock(&sim->sim_mutex);
-			break ;
-		}
-		pthread_mutex_unlock(&sim->sim_mutex);
-
-		next_deadline = find_earliest_deadline(sim);
-		ts = ms_to_timespec(next_deadline);
-		pthread_cond_timedwait(&sim->monitor_cond, &sim->monitor_mutex, &ts);
-
-		pthread_mutex_lock(&sim->sim_mutex);
-		if (sim->simulation_over)
-		{
-			pthread_mutex_unlock(&sim->sim_mutex);
-			break ;
-		}
-		pthread_mutex_unlock(&sim->sim_mutex);
-
-		burned_id = find_burned_out(sim);
-		if (burned_id != -1)
-		{
-			pthread_mutex_lock(&sim->sim_mutex);
-			if (!sim->simulation_over)
-			{
-				sim->simulation_over = 1;
-				pthread_mutex_unlock(&sim->sim_mutex);
-				log_action(sim, burned_id, "burned out");
-				wake_all_dongles(sim);
-			}
-			else
-				pthread_mutex_unlock(&sim->sim_mutex);
-			break ;
-		}
-	}
+	while (monitor_cycle(sim))
+		;
 	pthread_mutex_unlock(&sim->monitor_mutex);
 	return (NULL);
 }

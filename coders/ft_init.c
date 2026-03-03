@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_init.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/03 15:02:50 by ldzuba            #+#    #+#             */
+/*   Updated: 2026/03/03 15:37:59 by ldzuba           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 static int	init_dongles(t_sim *sim)
@@ -49,21 +61,21 @@ static int	init_coders(t_sim *sim)
 
 int	ft_init(t_sim *sim)
 {
-    sim->start_time = get_time_ms();
+	sim->start_time = get_time_ms();
 	sim->simulation_over = 0;
 	sim->coders = NULL;
 	sim->dongles = NULL;
 	if (pthread_mutex_init(&sim->print_mutex, NULL) != 0)
-    return (0);
+		return (0);
 	if (pthread_mutex_init(&sim->sim_mutex, NULL) != 0)
-    return (0);
-    if (pthread_mutex_init(&sim->monitor_mutex, NULL) != 0)
-    return (0);
-    if (pthread_cond_init(&sim->monitor_cond, NULL) != 0)
-    return (0);
-    if (!init_dongles(sim))
-    return (0);
+		return (0);
+	if (pthread_mutex_init(&sim->monitor_mutex, NULL) != 0)
+		return (0);
+	if (pthread_cond_init(&sim->monitor_cond, NULL) != 0)
+		return (0);
+	if (!init_dongles(sim))
+		return (0);
 	if (!init_coders(sim))
-    return (0);
+		return (0);
 	return (1);
 }
