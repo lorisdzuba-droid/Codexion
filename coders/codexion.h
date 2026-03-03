@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   codexion.h                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/03 12:00:23 by ldzuba            #+#    #+#             */
+/*   Updated: 2026/03/03 13:01:13 by ldzuba           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef CODEXION_H
 # define CODEXION_H
 
@@ -22,11 +34,10 @@ typedef enum e_state
 	WAITING_DONGLE
 }	t_state;
 
-// ─── Priority queue (min-heap) ───────────────────────────────────────────────
 
 typedef struct s_pq_node
 {
-	long long	priority;	// arrival time (FIFO) or deadline (EDF)
+	long long	priority;
 	int			coder_id;
 }	t_pq_node;
 
@@ -37,38 +48,34 @@ typedef struct s_pqueue
 	int			capacity;
 }	t_pqueue;
 
-// ─── Dongle ──────────────────────────────────────────────────────────────────
 
 typedef struct s_dongle
 {
 	int				id;
 	int				in_use;
-	long long		available_at;	// cooldown expiry timestamp (ms)
+	long long		available_at;
 	pthread_mutex_t	mutex;
 	pthread_cond_t	cond;
-	t_pqueue		queue;			// waiting coders (FIFO or EDF ordered)
+	t_pqueue		queue;
 }	t_dongle;
 
-// ─── Coder ───────────────────────────────────────────────────────────────────
 
 typedef struct s_coder
 {
 	int				id;
 	t_state			state;
 	int				compile_count;
-	long long		last_compile_start;	// ms timestamp
-	long long		deadline;			// last_compile_start + time_to_burnout
+	long long		last_compile_start;
+	long long		deadline;
 	t_dongle		*left;
 	t_dongle		*right;
 	pthread_t		thread;
 	struct s_sim	*sim;
 }	t_coder;
 
-// ─── Simulation ──────────────────────────────────────────────────────────────
 
 typedef struct s_sim
 {
-	// args
 	int				number_of_coders;
 	long long		time_to_burnout;
 	long long		time_to_compile;
@@ -78,7 +85,6 @@ typedef struct s_sim
 	long long		dongle_cooldown;
 	t_scheduler		scheduler;
 
-	// runtime
 	t_coder			*coders;
 	t_dongle		*dongles;
 	long long		start_time;
@@ -91,7 +97,6 @@ typedef struct s_sim
 
 }	t_sim;
 
-// ─── Prototypes ──────────────────────────────────────────────────────────────
 
 // parsing
 int			ft_parsing(int argc, char **argv, t_sim *sim);

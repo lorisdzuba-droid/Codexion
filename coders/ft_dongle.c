@@ -1,6 +1,5 @@
 #include "codexion.h"
 
-// Convert ms timestamp to struct timespec for pthread_cond_timedwait
 struct timespec	ms_to_timespec(long long ms)
 {
 	struct timespec	ts;
@@ -10,7 +9,6 @@ struct timespec	ms_to_timespec(long long ms)
 	return (ts);
 }
 
-// Remove a coder from the middle of the heap (used on burnout bailout)
 static void	pq_remove(t_pqueue *pq, int coder_id)
 {
 	int	i;
@@ -22,13 +20,6 @@ static void	pq_remove(t_pqueue *pq, int coder_id)
 		{
 			pq->nodes[i] = pq->nodes[pq->size - 1];
 			pq->size--;
-			// re-heapify: bubble up then down to cover both cases
-			if (i > 0 && pq->nodes[i].priority
-				< pq->nodes[(i - 1) / 2].priority)
-			{
-				// need bubble_up — but it's static in ft_pqueue.c
-				// so we expose a pq_reheapify helper instead (see note below)
-			}
 			pq_reheapify(pq, i);
 			return ;
 		}
@@ -54,7 +45,6 @@ void	dongle_dequeue(t_dongle *dongle, t_coder *coder)
 	pthread_mutex_unlock(&dongle->mutex);
 }
 
-// Take dongle assuming already enqueued
 int	take_dongle_queued(t_dongle *dongle, t_coder *coder, long long deadline_ms)
 {
 	long long		now;

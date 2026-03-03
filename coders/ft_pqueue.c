@@ -98,7 +98,6 @@ void	pq_reheapify(t_pqueue *pq, int i)
 	int	parent;
 
 	parent = (i - 1) / 2;
-	// If smaller than parent, bubble up
 	if (i > 0 && pq->nodes[i].priority < pq->nodes[parent].priority)
 		bubble_up(pq, i);
 	else

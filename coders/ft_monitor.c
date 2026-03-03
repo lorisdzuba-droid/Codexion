@@ -1,35 +1,42 @@
 #include "codexion.h"
 
-static t_coder	*find_earliest_deadline(t_sim *sim)
+static long long	find_earliest_deadline(t_sim *sim)
 {
-	t_coder	*earliest;
-	int		i;
+	long long	earliest;
+	int			i;
 
-	earliest = &sim->coders[0];
+	pthread_mutex_lock(&sim->sim_mutex);
+	earliest = sim->coders[0].deadline;
 	i = 1;
 	while (i < sim->number_of_coders)
 	{
-		if (sim->coders[i].deadline < earliest->deadline)
-			earliest = &sim->coders[i];
+		if (sim->coders[i].deadline < earliest)
+			earliest = sim->coders[i].deadline;
 		i++;
 	}
+	pthread_mutex_unlock(&sim->sim_mutex);
 	return (earliest);
 }
 
-static t_coder	*find_burned_out(t_sim *sim)
+static int	find_burned_out(t_sim *sim)
 {
 	long long	now;
 	int			i;
 
 	now = get_time_ms();
+	pthread_mutex_lock(&sim->sim_mutex);
 	i = 0;
 	while (i < sim->number_of_coders)
 	{
 		if (now >= sim->coders[i].deadline)
-			return (&sim->coders[i]);
+		{
+			pthread_mutex_unlock(&sim->sim_mutex);
+			return (sim->coders[i].id);
+		}
 		i++;
 	}
-	return (NULL);
+	pthread_mutex_unlock(&sim->sim_mutex);
+	return (-1);
 }
 
 void	wake_all_dongles(t_sim *sim)
@@ -49,17 +56,15 @@ void	wake_all_dongles(t_sim *sim)
 void	*monitor_routine(void *arg)
 {
 	t_sim			*sim;
-	t_coder			*target;
-	t_coder			*burned;
+	int				burned_id;
+    long long		next_deadline;
 	struct timespec	ts;
 
 	sim = (t_sim *)arg;
 
-	// Monitor has its own mutex+cond just for sleeping
 	pthread_mutex_lock(&sim->monitor_mutex);
 	while (1)
 	{
-		// Check if simulation already ended (all compiled)
 		pthread_mutex_lock(&sim->sim_mutex);
 		if (sim->simulation_over)
 		{
@@ -68,12 +73,10 @@ void	*monitor_routine(void *arg)
 		}
 		pthread_mutex_unlock(&sim->sim_mutex);
 
-		// Find who expires soonest and sleep until then
-		target = find_earliest_deadline(sim);
-		ts = ms_to_timespec(target->deadline);
+		next_deadline = find_earliest_deadline(sim);
+		ts = ms_to_timespec(next_deadline);
 		pthread_cond_timedwait(&sim->monitor_cond, &sim->monitor_mutex, &ts);
 
-		// Woke up — check if sim ended while sleeping
 		pthread_mutex_lock(&sim->sim_mutex);
 		if (sim->simulation_over)
 		{
@@ -82,23 +85,21 @@ void	*monitor_routine(void *arg)
 		}
 		pthread_mutex_unlock(&sim->sim_mutex);
 
-		// Check for actual burnout
-		burned = find_burned_out(sim);
-        if (burned)
-        {
-            pthread_mutex_lock(&sim->sim_mutex);
-            if (!sim->simulation_over)
-            {
-                sim->simulation_over = 1;
-                pthread_mutex_unlock(&sim->sim_mutex);
-                log_action(sim, burned->id, "burned out");
-                wake_all_dongles(sim);
-            }
-            else
-                pthread_mutex_unlock(&sim->sim_mutex);
-            break ;
-        }
-		// No burnout yet (spurious wakeup or deadline updated) — loop again
+		burned_id = find_burned_out(sim);
+		if (burned_id != -1)
+		{
+			pthread_mutex_lock(&sim->sim_mutex);
+			if (!sim->simulation_over)
+			{
+				sim->simulation_over = 1;
+				pthread_mutex_unlock(&sim->sim_mutex);
+				log_action(sim, burned_id, "burned out");
+				wake_all_dongles(sim);
+			}
+			else
+				pthread_mutex_unlock(&sim->sim_mutex);
+			break ;
+		}
 	}
 	pthread_mutex_unlock(&sim->monitor_mutex);
 	return (NULL);

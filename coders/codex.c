@@ -4,7 +4,6 @@ static int	launch_threads(t_sim *sim)
 {
 	int	i;
 
-	// Launch monitor first so it's ready before any coder can burn out
 	if (pthread_create(&sim->monitor, NULL, monitor_routine, sim) != 0)
 		return (0);
 	i = 0;
@@ -28,7 +27,6 @@ static void	join_threads(t_sim *sim)
 		pthread_join(sim->coders[i].thread, NULL);
 		i++;
 	}
-	// Wake monitor in case it's still sleeping after all coders exited
 	pthread_mutex_lock(&sim->monitor_mutex);
 	pthread_cond_signal(&sim->monitor_cond);
 	pthread_mutex_unlock(&sim->monitor_mutex);

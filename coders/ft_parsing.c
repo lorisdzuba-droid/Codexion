@@ -67,7 +67,7 @@ int	ft_parsing(int argc, char **argv, t_sim *sim)
 	{
 		if (!is_positive_int(argv[i]))
 		{
-			fprintf(stderr, "Error: argument %d must be a non-negative integer\n", i);
+			fprintf(stderr, "Error: argument %d must be a positive integer\n", i);
 			return (0);
 		}
 		i++;
