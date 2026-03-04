@@ -188,6 +188,14 @@ Coders and the monitor never communicate directly. All coordination happens thro
 
 ---
 
+**Note on FIFO vs EDF equivalence**: Since `time_to_burnout` is a global 
+parameter shared by all coders, EDF ordering (`last_compile_start + 
+time_to_burnout`) is mathematically equivalent to FIFO ordering (arrival 
+timestamp) in this simulation. The two scheduling policies would only diverge 
+if coders had individual burnout times. The heap implementation correctly 
+handles both policies and would remain correct if per-coder burnout times 
+were introduced.
+
 ## Resources
 
 ### Classic References

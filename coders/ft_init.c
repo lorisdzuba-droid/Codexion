@@ -6,7 +6,7 @@
 /*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 15:02:50 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/03 15:37:59 by ldzuba           ###   ########.fr       */
+/*   Updated: 2026/03/04 14:52:15 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,6 @@ static int	init_coders(t_sim *sim)
 	while (i < sim->number_of_coders)
 	{
 		sim->coders[i].id = i + 1;
-		sim->coders[i].state = WAITING_DONGLE;
 		sim->coders[i].compile_count = 0;
 		sim->coders[i].last_compile_start = 0;
 		sim->coders[i].deadline = sim->start_time + sim->time_to_burnout;

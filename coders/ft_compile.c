@@ -6,7 +6,7 @@
 /*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 15:22:55 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/03 15:52:10 by ldzuba           ###   ########.fr       */
+/*   Updated: 2026/03/04 15:42:47 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,19 +14,8 @@
 
 static void	set_dongles(t_coder *coder, t_dongle **first, t_dongle **second)
 {
-	t_sim	*sim;
-
-	sim = coder->sim;
-	if (coder->id == sim->number_of_coders)
-	{
-		*first = coder->right;
-		*second = coder->left;
-	}
-	else
-	{
-		*first = coder->left;
-		*second = coder->right;
-	}
+	*first = coder->right;
+	*second = coder->left;
 }
 
 static int	acquire_dongles(t_coder *coder, t_dongle *first, t_dongle *second)

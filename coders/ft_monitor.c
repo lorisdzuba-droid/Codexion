@@ -6,7 +6,7 @@
 /*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 15:02:58 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/03 15:43:07 by ldzuba           ###   ########.fr       */
+/*   Updated: 2026/03/04 15:34:44 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ static int	handle_burnout(t_sim *sim, int burned_id)
 	}
 	sim->simulation_over = 1;
 	pthread_mutex_unlock(&sim->sim_mutex);
+	usleep(1000);
 	log_action(sim, burned_id, "burned out");
 	wake_all_dongles(sim);
 	return (1);

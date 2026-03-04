@@ -6,7 +6,7 @@
 /*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 15:25:40 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/03 15:52:22 by ldzuba           ###   ########.fr       */
+/*   Updated: 2026/03/04 15:33:59 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,10 @@ static void	single_coder_routine(t_coder *coder)
 static void	stop_simulation(t_sim *sim)
 {
 	if (set_sim_over(sim))
+	{
+		usleep(1000);
 		log_action(sim, 0, "all done - no burnout");
+	}
 	wake_all_dongles(sim);
 	pthread_mutex_lock(&sim->monitor_mutex);
 	pthread_cond_signal(&sim->monitor_cond);
@@ -50,6 +53,8 @@ static int	do_cycle(t_coder *coder)
 		stop_simulation(sim);
 		return (0);
 	}
+	if (sim_is_over(sim))
+		return (0);
 	log_action(sim, coder->id, "is debugging");
 	usleep(sim->time_to_debug * 1000);
 	if (sim_is_over(sim))

@@ -6,7 +6,7 @@
 /*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 15:51:38 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/03 15:51:56 by ldzuba           ###   ########.fr       */
+/*   Updated: 2026/03/04 15:32:07 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,13 +42,17 @@ static int	take_second_or_abort(t_coder *coder, t_dongle *first,
 	t_sim	*sim;
 
 	sim = coder->sim;
-	if (sim_is_over(sim) || get_time_ms() >= deadline)
+	if (sim_is_over(sim))
 	{
 		dongle_dequeue(second, coder);
 		release_dongle(first, sim);
-		if (get_time_ms() >= deadline)
-			return (-1);
 		return (0);
+	}
+	if (get_time_ms() >= deadline)
+	{
+		dongle_dequeue(second, coder);
+		release_dongle(first, sim);
+		return (-1);
 	}
 	if (!take_dongle_queued(second, coder, deadline))
 	{
