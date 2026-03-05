@@ -6,7 +6,7 @@
 /*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 15:25:40 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/04 15:33:59 by ldzuba           ###   ########.fr       */
+/*   Updated: 2026/03/04 16:02:13 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ static void	stop_simulation(t_sim *sim)
 {
 	if (set_sim_over(sim))
 	{
-		usleep(1000);
+		usleep(5000);
 		log_action(sim, 0, "all done - no burnout");
 	}
 	wake_all_dongles(sim);

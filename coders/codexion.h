@@ -6,7 +6,7 @@
 /*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 12:00:23 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/04 15:12:16 by ldzuba           ###   ########.fr       */
+/*   Updated: 2026/03/04 16:21:09 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,8 +125,6 @@ int				try_take_both(t_coder *coder,
 int				sim_is_over(t_sim *sim);
 int				do_compile(t_coder *coder);
 void			*coder_routine(void *arg);
-int				try_acquire(t_dongle *dongle, t_coder *coder, long long deadline_ms);
-void			wait_for_dongle(t_dongle *dongle, long long deadline_ms, int *wakeups);
 // threads
 void			*coder_routine(void *arg);
 void			*monitor_routine(void *arg);
