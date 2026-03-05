@@ -6,7 +6,7 @@
 /*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 15:03:11 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/04 12:45:21 by ldzuba           ###   ########.fr       */
+/*   Updated: 2026/03/05 11:02:21 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ void	log_action(t_sim *sim, int coder_id, char *action)
 {
 	long long	timestamp;
 
-	timestamp = get_time_ms() - sim->start_time;
 	pthread_mutex_lock(&sim->print_mutex);
+	timestamp = get_time_ms() - sim->start_time;
 	printf("%lld %d %s\n", timestamp, coder_id, action);
 	pthread_mutex_unlock(&sim->print_mutex);
 }

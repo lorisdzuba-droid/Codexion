@@ -6,7 +6,7 @@
 /*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/03 12:00:23 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/04 16:21:09 by ldzuba           ###   ########.fr       */
+/*   Updated: 2026/03/05 10:14:40 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,6 @@ typedef enum e_scheduler
 	FIFO,
 	EDF
 }	t_scheduler;
-
-typedef enum e_state
-{
-	COMPILING,
-	DEBUGGING,
-	REFACTORING,
-	WAITING_DONGLE
-}	t_state;
 
 typedef struct s_pq_node
 {
