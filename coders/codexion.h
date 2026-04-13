@@ -3,21 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   codexion.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
+/*   By: ldzuba <ldzuba@student.s19.be>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/03 12:00:23 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/05 10:14:40 by ldzuba           ###   ########.fr       */
+/*   Created: 2026/02/27 12:11:59 by ldzuba            #+#    #+#             */
+/*   Updated: 2026/02/27 12:12:01 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef CODEXION_H
 # define CODEXION_H
 
-# include <pthread.h>
-# include <sys/time.h>
+# include <unistd.h>
 # include <stdlib.h>
 # include <stdio.h>
 # include <unistd.h>
+# include <pthread.h>
+# include <sys/time.h>
 # include <string.h>
 
 typedef enum e_scheduler
@@ -26,43 +28,37 @@ typedef enum e_scheduler
 	EDF
 }	t_scheduler;
 
-typedef struct s_pq_node
+typedef enum e_state
 {
-	long long	priority;
-	int			coder_id;
-}	t_pq_node;
-
-typedef struct s_pqueue
-{
-	t_pq_node	*nodes;
-	int			size;
-	int			capacity;
-}	t_pqueue;
+	COMPILING,
+	DEBUGGING,
+	REFACTORING,
+	BURNED_OUT
+}	t_state;
 
 typedef struct s_dongle
 {
-	int				id;
-	int				in_use;
-	long long		available_at;
 	pthread_mutex_t	mutex;
-	pthread_cond_t	cond;
-	t_pqueue		queue;
+	int				available;
+	long long		available_at;	// timestamp when cooldown expires
 }	t_dongle;
 
 typedef struct s_coder
 {
 	int				id;
+	t_state			state;
 	int				compile_count;
-	long long		last_compile_start;
-	long long		deadline;
-	t_dongle		*left;
-	t_dongle		*right;
+	long long		last_compile_start;	// timestamp, for burnout check
+	long long		deadline;			// last_compile_start + time_to_burnout (for EDF)
+	t_dongle		*left_dongle;
+	t_dongle		*right_dongle;
 	pthread_t		thread;
-	struct s_sim	*sim;
+	struct s_sim	*sim;				// back pointer to shared simulation
 }	t_coder;
 
 typedef struct s_sim
 {
+	// parsed args
 	int				number_of_coders;
 	long long		time_to_burnout;
 	long long		time_to_compile;
@@ -72,57 +68,16 @@ typedef struct s_sim
 	long long		dongle_cooldown;
 	t_scheduler		scheduler;
 
+	// runtime
 	t_coder			*coders;
 	t_dongle		*dongles;
 	long long		start_time;
-	int				simulation_over;
-	pthread_mutex_t	print_mutex;
-	pthread_mutex_t	sim_mutex;
-	pthread_t		monitor;
-	pthread_mutex_t	monitor_mutex;
-	pthread_cond_t	monitor_cond;
-
+	int				simulation_over;	// flag checked by all threads
+	pthread_mutex_t	print_mutex;		// so logs don't interleave
+	pthread_mutex_t	sim_mutex;			// to protect simulation_over flag
 }	t_sim;
-// parsing
-int				ft_parsing(int argc, char **argv, t_sim *sim);
-// init & cleanup
-int				ft_init(t_sim *sim);
-void			ft_cleanup(t_sim *sim);
-// utils
-long long		get_time_ms(void);
-void			log_action(t_sim *sim, int coder_id, char *action);
-struct timespec	ms_to_timespec(long long ms);
-int				all_done(t_sim *sim);
-void			coder_burnout(t_coder *coder);
-int				set_sim_over(t_sim *sim);
-// priority queue
-int				pq_init(t_pqueue *pq, int capacity);
-void			pq_push(t_pqueue *pq, int coder_id, long long priority);
-t_pq_node		pq_pop(t_pqueue *pq);
-int				pq_peek_id(t_pqueue *pq);
-void			pq_free(t_pqueue *pq);
-void			bubble_up(t_pqueue *pq, int i);
-void			bubble_down(t_pqueue *pq, int i);
-void			pq_reheapify(t_pqueue *pq, int i);
-void			pq_remove(t_pqueue *pq, int coder_id);
-// dongle
-void			release_dongle(t_dongle *dongle, t_sim *sim);
-void			dongle_enqueue(t_dongle *dongle,
-					t_coder *coder, long long priority);
-void			dongle_dequeue(t_dongle *dongle, t_coder *coder);
-int				take_dongle_queued(t_dongle *dongle,
-					t_coder *coder, long long deadline_ms);
-int				try_take_both(t_coder *coder,
-					t_dongle *first, t_dongle *second);
-int				sim_is_over(t_sim *sim);
-int				do_compile(t_coder *coder);
-void			*coder_routine(void *arg);
-// threads
-void			*coder_routine(void *arg);
-void			*monitor_routine(void *arg);
-// monitoring
-void			*monitor_routine(void *arg);
-void			wake_all_dongles(t_sim *sim);
-int				check_sim_over(t_dongle *dongle, t_coder *coder);
 
-#endif
+
+int ft_parsing(int argc, char **argv, t_sim *sim);
+
+# endif

@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   ft_parsing.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ldzuba <ldzuba@student.42belgium.be>       +#+  +:+       +#+        */
+/*   By: ldzuba <ldzuba@student.s19.be>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/03 15:03:02 by ldzuba            #+#    #+#             */
-/*   Updated: 2026/03/03 15:47:24 by ldzuba           ###   ########.fr       */
+/*   Created: 2026/02/27 12:09:14 by ldzuba            #+#    #+#             */
+/*   Updated: 2026/02/27 12:09:17 by ldzuba           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #include "codexion.h"
 
@@ -41,13 +42,13 @@ static int	parse_scheduler(char *str, t_scheduler *scheduler)
 
 static int	fill_sim(char **argv, t_sim *sim)
 {
-	sim->number_of_coders = atoi(argv[1]);
-	sim->time_to_burnout = (long long)atoi(argv[2]);
-	sim->time_to_compile = (long long)atoi(argv[3]);
-	sim->time_to_debug = (long long)atoi(argv[4]);
-	sim->time_to_refactor = (long long)atoi(argv[5]);
-	sim->number_of_compiles_required = atoi(argv[6]);
-	sim->dongle_cooldown = (long long)atoi(argv[7]);
+	sim->number_of_coders			= atoi(argv[1]);
+	sim->time_to_burnout			= (long long)atoi(argv[2]);
+	sim->time_to_compile			= (long long)atoi(argv[3]);
+	sim->time_to_debug				= (long long)atoi(argv[4]);
+	sim->time_to_refactor			= (long long)atoi(argv[5]);
+	sim->number_of_compiles_required	= atoi(argv[6]);
+	sim->dongle_cooldown			= (long long)atoi(argv[7]);
 	if (!parse_scheduler(argv[8], &sim->scheduler))
 		return (0);
 	if (sim->number_of_coders < 1)
@@ -62,7 +63,7 @@ static int	fill_sim(char **argv, t_sim *sim)
 	return (1);
 }
 
-static int	validate_args(int argc, char **argv)
+int	ft_parsing(int argc, char **argv, t_sim *sim)
 {
 	int	i;
 
@@ -71,8 +72,7 @@ static int	validate_args(int argc, char **argv)
 		fprintf(stderr, "Error: expected 8 arguments\n");
 		fprintf(stderr, "Usage: %s number_of_coders time_to_burnout "
 			"time_to_compile time_to_debug time_to_refactor "
-			"number_of_compiles_required dongle_cooldown scheduler\n",
-			argv[0]);
+			"number_of_compiles_required dongle_cooldown scheduler\n", argv[0]);
 		return (0);
 	}
 	i = 1;
@@ -80,19 +80,11 @@ static int	validate_args(int argc, char **argv)
 	{
 		if (!is_positive_int(argv[i]))
 		{
-			fprintf(stderr,
-				"Error: argument %d must be a positive integer\n", i);
+			fprintf(stderr, "Error: argument %d must be a non-negative integer\n", i);
 			return (0);
 		}
 		i++;
 	}
-	return (1);
-}
-
-int	ft_parsing(int argc, char **argv, t_sim *sim)
-{
-	if (!validate_args(argc, argv))
-		return (0);
 	if (!fill_sim(argv, sim))
 	{
 		fprintf(stderr, "Error: invalid argument values\n");
